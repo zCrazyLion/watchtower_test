@@ -5,7 +5,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      WATCHTOWER_POLL_INTERVAL: "600"
+      WATCHTOWER_POLL_INTERVAL: "3600"
       WATCHTOWER_CLEANUP: "true"
     # tell watchtower to not monitor itself
     #labels:
@@ -27,11 +27,11 @@ services:
     restart: always
     networks:
       ubuntu_net:
-        ipv4_address: 172.28.0.8
+        ipv4_address: 172.28.0.34
 
 networks:
   ubuntu_net:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.28.0.0/27
+        - subnet: 172.28.0.32/27
