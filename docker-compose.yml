@@ -17,20 +17,20 @@ services:
     hostname: ubuntu_wt
     ports:
       - "8088:80"
-    #command: bash -c "
-    #  apt-get update &&
-    #  apt-get install -y openssh-server &&
-    #  echo 'root:1234' | chpasswd &&
-    #  sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config &&
-    #  service ssh start &&
-    #  tail -f /dev/null"
+    command: bash -c "
+      apt-get update &&
+      apt-get install -y openssh-server &&
+      echo 'root:1234' | chpasswd &&
+      sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+      service ssh start &&
+      tail -f /dev/null"
     restart: always
     networks:
-      ubuntu_net:
+      watchtower_net:
         ipv4_address: 172.28.0.34
 
 networks:
-  ubuntu_net:
+  watchtower_net:
     driver: bridge
     ipam:
       config:
