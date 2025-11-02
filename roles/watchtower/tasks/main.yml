@@ -1,0 +1,17 @@
+---
+- name: Ensure /opt/watchtower exists
+  ansible.builtin.file:
+    path: /opt/watchtower
+    state: directory
+    mode: '0755'
+
+- name: Deploy docker-compose.yml template
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /opt/watchtower/docker-compose.yml
+    mode: '0644'
+
+- name: Start Watchtower container via docker-compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/watchtower
+    state: present

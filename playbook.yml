@@ -1,0 +1,12 @@
+---
+- name: Prepare new Docker containers for Ansible
+  hosts: docker_hosts
+  become: true
+  roles:
+    - base
+
+- name: Deploy Watchtower locally via Ansible
+  hosts: localhost
+  become: true
+  roles:
+    - watchtower
