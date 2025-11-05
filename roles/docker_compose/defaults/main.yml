@@ -1,0 +1,6 @@
+---
+docker_compose_state: "present"
+docker_compose_project_name: "default_project"
+docker_compose_workdir: "/opt/docker/{{ docker_compose_project_name }}"
+docker_ansible_user: 'root'
+docker_container_pwds: "1234"

@@ -1,12 +1,102 @@
 ---
-- name: Prepare new Docker containers for Ansible
-  hosts: docker_hosts
+- name: Deploy docker compose project
+  hosts: localhost
+  connection: local
   become: true
+  vars:
+    # Provide a project name
+    docker_compose_project_name: "test"
+
+    # Desired state of the project
+    # Choices: present, stopped, absent, restarted
+    docker_compose_state: "present"
+
+    # Specify a password for all docker containers deployed in the current compose file
+    # Default: 1234
+    docker_container_pwds: "1234" # can maybe specified as a vault file?
+
+    # Specify an Ansible user through which all Ansible commands will be executed.
+    # Default: root
+    docker_ansible_user: 'root'
+
+    # Insert the docker-compose.yml file indented 3 places to the right
+    docker_compose_file: |
+      services:
+        UbuntuOne:
+          image: ubuntu:latest
+          container_name: UbuntuOne
+          labels:
+            - "com.centurylinklabs.watchtower.enable=true"
+          hostname: UbuntuOne
+          ports:
+            - "8081:80"
+          command: bash -c "
+            tail -f /dev/null"
+          restart: always
+          networks:
+            ubuntu_net:
+              ipv4_address: 172.28.0.2
+        UbuntuTwo:
+          image: ubuntu:latest
+          container_name: UbuntuTwo
+          labels:
+            - "com.centurylinklabs.watchtower.enable=true"
+          hostname: UbuntuTwo
+          ports:
+            - "8082:80"
+          command: bash -c "
+            tail -f /dev/null"
+          restart: always
+          networks:
+            ubuntu_net:
+              ipv4_address: 172.28.0.3
+        UbuntuThree:
+          image: ubuntu:latest
+          container_name: UbuntuThree
+          labels:
+            - "com.centurylinklabs.watchtower.enable=true"
+          hostname: UbuntuThree
+          ports:
+            - "8083:80"
+          command: bash -c "
+            tail -f /dev/null"
+          restart: always
+          networks:
+            ubuntu_net:
+              ipv4_address: 172.28.0.4
+
+      networks:
+        ubuntu_net:
+          driver: bridge
+          ipam:
+            config:
+              - subnet: 172.28.0.0/27
   roles:
-    - base
+    - docker_compose
 
 - name: Deploy Watchtower locally via Ansible
   hosts: localhost
   become: true
+  vars:
+    # Poll interval (in seconds). This value controls how frequently watchtower will poll for new images.
+    # Default: 86400
+    watchtower_poll_interval: "3600"
+
+    # Removes old images after updating. When this flag is specified, watchtower will remove the old image after restarting a container with a new image.
+    # Default: true
+    watchtower_cleanup: "true"
+
+    # Enable debug mode with verbose logging.
+    # Default: false
+    watchtower_debug: "true"
+
+    # Only monitor and update containers that have a com.centurylinklabs.watchtower.enable label set to true.
+    # Default: false
+    watchtower_label_enable: "true"
+
+    # Set state of the watchtower container
+    # Choices: absent, present, healthy, stopped, started
+    # Default: started
+    container_state: "started"
   roles:
     - watchtower

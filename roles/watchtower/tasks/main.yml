@@ -1,17 +1,14 @@
 ---
-- name: Ensure /opt/watchtower exists
-  ansible.builtin.file:
-    path: /opt/watchtower
-    state: directory
-    mode: '0755'
-
-- name: Deploy docker-compose.yml template
-  ansible.builtin.template:
-    src: docker-compose.yml.j2
-    dest: /opt/watchtower/docker-compose.yml
-    mode: '0644'
-
-- name: Start Watchtower container via docker-compose
-  community.docker.docker_compose_v2:
-    project_src: /opt/watchtower
-    state: present
+- name: Start Watchtower container
+  community.docker.docker_container:
+    name: watchtower
+    state: "{{ container_state }}"
+    image: containrrr/watchtower:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    env:
+      WATCHTOWER_POLL_INTERVAL: "{{ watchtower_poll_interval }}"
+      WATCHTOWER_CLEANUP: "{{ watchtower_cleanup }}"
+      WATCHTOWER_LABEL_ENABLE: "{{ watchtower_label_enable }}"
+      WATCHTOWER_DEBUG: "{{ watchtower_debug }}"
+    restart_policy: always

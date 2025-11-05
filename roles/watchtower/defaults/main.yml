@@ -1,0 +1,5 @@
+watchtower_poll_interval: "86400"
+watchtower_cleanup: "true"
+watchtower_debug: "false"
+watchtower_label_enable: "false"
+container_state: "started"
