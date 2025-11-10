@@ -1,3 +1,4 @@
+---
 all:
   children:
     docker_hosts:
@@ -7,3 +8,25 @@ all:
           ansible_connection: local
 
 docker_hosts:
+  hosts:
+# BEGIN DOCKER HOSTS
+    server_UbuntuOne:
+      ansible_host: 172.28.0.2
+      ansible_port: 22
+      ansible_user: root
+      ansible_ssh_pass: '1234'
+      ansible_connection: ssh
+    server_UbuntuThree:
+      ansible_host: 172.28.0.4
+      ansible_port: 22
+      ansible_user: root
+      ansible_ssh_pass: '1234'
+      ansible_connection: ssh
+    server_UbuntuTwo:
+      ansible_host: 172.28.0.3
+      ansible_port: 22
+      ansible_user: root
+      ansible_ssh_pass: '1234'
+      ansible_connection: ssh
+# END DOCKER HOSTS
+

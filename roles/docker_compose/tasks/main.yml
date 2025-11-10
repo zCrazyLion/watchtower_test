@@ -15,6 +15,8 @@
     project_src: "{{ docker_compose_workdir }}"
     project_name: "{{ docker_compose_project_name }}"
     state: "{{ docker_compose_state }}"
+    recreate: always
+    remove_orphans: false
   register: compose_result
 
 - name: Install OpenSSH and set ansible_user password
@@ -41,24 +43,23 @@
 #    var: "{{ item }}"
 #  loop: "{{ container_infos.results }}"
 
-#- name: Add new deployed hosts to inventory.yml file
-#  ansible.builtin.blockinfile:
-#    path: inventory.yml
-#    marker: "# {mark} DOCKER HOSTS"
-#    insertafter: '^docker_hosts:'
-#    block: |
-#      {% for item in container_infos.results %}
-#      server_{{ item.container.Name.lstrip('/') }}_{{ item.container.NetworkSettings.Networks.keys() | list | first }}:
-#        ansible_host: {{ item.container.NetworkSettings.Networks[item.container.NetworkSettings.Networks.keys() | list | first].IPAddress }}
-#        ansible_port: 22
-#        ansible_user: {{ docker_ansible_user }}
-#        ansible_ssh_pass: '{{ docker_container_pwds }}'
-#        ansible_connection: ssh
-#      {% endfor %}
-
-
-
-#-- move Add new deployed hosts to inventory.yml file back here later
+- name: Add new deployed hosts to inventory.yml file
+  #tags: inventory
+  ansible.builtin.blockinfile:
+    path: inventory.yml
+    marker: "# {mark} DOCKER HOSTS"
+    insertafter: 'hosts:'
+    block: |
+      {% for item in container_infos.results %}
+      {% filter indent(width=2, first=true) %}
+        server_{{ item.container.Name.lstrip('/') }}:
+          ansible_host: {{ item.container.NetworkSettings.Networks[item.container.NetworkSettings.Networks.keys() | list | first].IPAddress }}
+          ansible_port: 22
+          ansible_user: {{ docker_ansible_user }}
+          ansible_ssh_pass: '{{ docker_container_pwds }}'
+          ansible_connection: ssh
+      {% endfilter %}
+      {% endfor %}
 
 - name: Remove deployed hosts from inventory.yml file
   ansible.builtin.replace:
