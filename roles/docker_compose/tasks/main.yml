@@ -1,75 +1,25 @@
 ---
 - name: Ensure docker-compose directory exists
   ansible.builtin.file:
-    path: "{{ docker_compose_workdir }}"
+    path: "{{ docker_compose_dir }}"
     state: directory
 
 - name: Write docker-compose.yml from template
   ansible.builtin.template:
     src: docker-compose.yml.j2
-    dest: "{{ docker_compose_workdir }}/docker-compose.yml"
+    dest: "{{ docker_compose_dir }}/docker-compose.yml"
   when: docker_compose_state in ['present', 'restarted'] and docker_compose_file is defined
 
 - name: Manage docker compose project
   community.docker.docker_compose_v2:
-    project_src: "{{ docker_compose_workdir }}"
-    project_name: "{{ docker_compose_project_name }}"
+    project_src: "{{ docker_compose_dir }}"
+
     state: "{{ docker_compose_state }}"
     recreate: always
     remove_orphans: false
-  register: compose_result
-
-- name: Install OpenSSH and set ansible_user password
-  community.docker.docker_container_exec:
-    container: "{{ item.Name }}"
-    command: |
-      /bin/bash -c "
-      apt update &&
-      apt install -y openssh-server &&
-      echo '{{ docker_ansible_user }}:{{ docker_container_pwds }}' | chpasswd &&
-      mkdir -p /var/run/sshd &&
-      sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config &&
-      service ssh start"
-  loop: "{{ compose_result.containers }}"
-
-- name: Get detailed container info
-  community.docker.docker_container_info:
-    name: "{{ item.Name }}"
-  loop: "{{ compose_result.containers }}"
-  register: container_infos
-
-#- name: Debug detailed info
-#  debug:
-#    var: "{{ item }}"
-#  loop: "{{ container_infos.results }}"
-
-- name: Add new deployed hosts to inventory.yml file
-  #tags: inventory
-  ansible.builtin.blockinfile:
-    path: inventory.yml
-    marker: "# {mark} DOCKER HOSTS"
-    insertafter: 'hosts:'
-    block: |
-      {% for item in container_infos.results %}
-      {% filter indent(width=2, first=true) %}
-        server_{{ item.container.Name.lstrip('/') }}:
-          ansible_host: {{ item.container.NetworkSettings.Networks[item.container.NetworkSettings.Networks.keys() | list | first].IPAddress }}
-          ansible_port: 22
-          ansible_user: {{ docker_ansible_user }}
-          ansible_ssh_pass: '{{ docker_container_pwds }}'
-          ansible_connection: ssh
-      {% endfilter %}
-      {% endfor %}
-
-- name: Remove deployed hosts from inventory.yml file
-  ansible.builtin.replace:
-    path: inventory.yml
-    regexp: '^  server_.*$'
-    replace: ''
-  when: docker_compose_state == "absent"
 
 - name: Remove compose directory when absent
   ansible.builtin.file:
-    path: "{{ docker_compose_workdir }}"
+    path: "{{ docker_compose_dir }}"
     state: absent
   when: docker_compose_state == "absent"

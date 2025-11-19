@@ -4,13 +4,13 @@
   connection: local
   become: true
   vars:
-    # Provide a project name
+    # Provide a directory where docker composes the containers
     # A different name should be used for every new compose file
-    docker_compose_project_name: "ubuntu123" #change to dir
+    docker_compose_dir: "/opt/docker/ubuntu123"
 
     # Desired state of the project
     # Choices: present, stopped, absent, restarted
-    docker_compose_state: "present"
+    docker_compose_state: "absent"
 
     # Specify a password for all docker containers deployed in the current compose file
     # Default: 1234
@@ -19,10 +19,6 @@
     # Specify an Ansible user through which all Ansible commands will be executed.
     # Default: root
     docker_ansible_user: 'root'
-
-    # Directory where docker composes the containers
-    # Default: /opt/docker
-    docker_compose_dir: "/opt/docker" # change to dir
 
     # Insert the docker-compose.yml file indented 3 places to the right
     docker_compose_file: |
